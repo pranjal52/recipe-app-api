@@ -1,0 +1,26 @@
+---
+name: Checks
+
+#Trigger is "push"
+on: [push]
+
+#All Jobs to be run
+jobs:
+  test-lint:
+    name: Test and Lint
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Login to Docker Hub
+        #Pre-made action available to login to docker
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      #Step required to make the codebase available in the github actions
+      #It is not automatically available because a lot of github action might not require the code
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        run: docker-compose run --rm app sh -c "python manage.py test"
+      - name: Lint
+        run: docker-compose run --rm app sh -c "flake8"
