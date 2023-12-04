@@ -15,4 +15,36 @@ services:
       #Mapping directories from our system into the docker container so that code changes are reflected in real time
       - ./app:/app
     command: >
-      sh -c "python manage.py runserver 0.0.0.0:8000"
+      sh -c "python manage.py wait_for_db &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+    #Adding env details of DB to app service
+    environment:
+      #Hostname for docker based services can be the service name
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASS=changeme
+
+    #Starts and waits for DB service before app service is started
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13-alpine
+
+    #Mapping path to the docker container path
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+
+    #Environment credentials 
+    #Just for local dev
+    environment:
+      - POSTGRES_DB=devdb
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=changeme
+
+#Adding the dev DB database name to persist data
+volumes:
+  dev-db-data:
