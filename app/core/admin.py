@@ -66,3 +66,5 @@ class UserAdmin(BaseUserAdmin):
 # Extra parameter UserAdmin is passed to ensure it uses the above
 # UserAdmin and ot the default one.
 admin.site.register(models.User, UserAdmin)
+admin.site.register(models.Recipe)
+admin.site.register(models.Tag)
