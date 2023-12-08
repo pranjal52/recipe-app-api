@@ -14,6 +14,7 @@ services:
     volumes:
       #Mapping directories from our system into the docker container so that code changes are reflected in real time
       - ./app:/app
+      - dev-static-data:/vol/web
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
@@ -26,6 +27,7 @@ services:
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=changeme
+      - DEBUG=1
 
     #Starts and waits for DB service before app service is started
     depends_on:
@@ -48,3 +50,4 @@ services:
 #Adding the dev DB database name to persist data
 volumes:
   dev-db-data:
+  dev-static-data:

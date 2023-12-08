@@ -7,6 +7,7 @@ ENV PYTHONUNBUFFERED 1
 
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
+COPY ./scripts /scripts
 COPY ./app /app
 
 #Set the default path where the commands will be run from
@@ -21,9 +22,9 @@ ARG DEV=false
 # 4) Remove the tmp dir 5) Add a new user to the docker image (avoid using root user) 
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
-    apk add --update --no-cache postgresql-client && \
+    apk add --update --no-cache postgresql-client jpeg-dev && \
     apk add --update --no-cache --virtual .tmp-build-deps \
-        build-base postgresql-dev musl-dev && \
+        build-base postgresql-dev musl-dev zlib zlib-dev linux-headers && \
     /py/bin/pip install -r /tmp/requirements.txt && \
     if [ $DEV = "true" ]; \
         then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
@@ -33,10 +34,20 @@ RUN python -m venv /py && \
     adduser \
         --disabled-password \
         --no-create-home \
-        django-user
+        django-user && \
+    # Create the media nd static subfolders 
+    # -p is passed to create all the subdirectories required 
+    # for the path
+    mkdir -p /vol/web/media && \
+    mkdir -p /vol/web/static && \
+    chown -R django-user:django-user /vol && \
+    chmod -R 755 /vol && \
+    chmod -R +x /scripts
 
-#Adds Python bin to path of the docker image
-ENV PATH="/py/bin:$PATH"
+#Adds Python bin and scripts to path of the docker image
+ENV PATH="/scripts:/py/bin:$PATH"
 
 #Switch to django-user
 USER django-user
+
+CMD ["run.sh"]
